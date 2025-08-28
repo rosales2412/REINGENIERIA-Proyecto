@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>POS Práctica — Dashboard & CRUDs</title>
+  <link rel="stylesheet" href="styles.css"/>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">🛍️ POS Práctica</div>
+    <div class="spacer"></div>
+    <div class="status">
+      <span id="api-status" class="dot red"></span>
+      <span id="api-status-text">API: desconectada</span>
+    </div>
+  </header>
+
+  <div class="layout">
+    <aside class="sidebar">
+      <nav>
+        <button class="tab-btn active" data-tab="dashboard"> Dashboard</button>
+        <button class="tab-btn" data-tab="users"> Usuarios</button>
+        <button class="tab-btn" data-tab="customers"> Clientes</button>
+        <button class="tab-btn" data-tab="products"> Productos</button>
+        <button class="tab-btn" data-tab="sales"> Ventas</button>
+      </nav>
+      <div class="aside-foot">
+        <button id="reload-data" class="secondary full"> Recargar</button>
+      </div>
+    </aside>
+
+    <main class="content">
+      <!-- DASHBOARD -->
+      <section id="dashboard" class="tab active">
+        <h2>Dashboard</h2>
+        <div class="grid kpis">
+          <div class="card kpi">
+            <div class="kpi-title">Productos</div>
+            <div class="kpi-value" id="kpi-products">—</div>
+            <div class="kpi-sub" id="kpi-low">Bajo stock: —</div>
+          </div>
+          <div class="card kpi">
+            <div class="kpi-title">Clientes</div>
+            <div class="kpi-value" id="kpi-customers">—</div>
+            <div class="kpi-sub">+ Datos de ejemplo</div>
+          </div>
+          <div class="card kpi">
+            <div class="kpi-title">Ventas (hoy)</div>
+            <div class="kpi-value" id="kpi-sales-today">—</div>
+            <div class="kpi-sub">Ingresos hoy: $<span id="kpi-revenue-today">0.00</span></div>
+          </div>
+          <div class="card kpi">
+            <div class="kpi-title">Ventas (totales)</div>
+            <div class="kpi-value" id="kpi-sales">—</div>
+            <div class="kpi-sub">Ingresos totales: $<span id="kpi-revenue">0.00</span></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-head">
+            <h3>Últimas ventas</h3>
+            <div class="actions">
+              <input id="dash-search" class="input" placeholder="Buscar por cliente o ID..."/>
+            </div>
+          </div>
+          <table>
+            <thead><tr><th>#</th><th>Cliente</th><th>Total</th><th>Fecha</th></tr></thead>
+            <tbody id="dash-sales-tbody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- USERS -->
+      <section id="users" class="tab">
+        <div class="head-row">
+          <h2>Usuarios</h2>
+          <div class="actions">
+            <input id="user-q" class="input" placeholder="Buscar..."/>
+            <button id="user-new" class="primary">+ Nuevo</button>
+          </div>
+        </div>
+
+        <form id="user-form" class="card form-grid hidden">
+          <input type="hidden" name="id"/>
+          <label>Nombre<input name="name" required/></label>
+          <label>Email<input name="email" type="email" required/></label>
+          <label>Rol
+            <select name="role">
+              <option value="cashier">Cajero</option>
+              <option value="manager">Gerente</option>
+              <option value="admin">Admin</option>
+            </select>
+          </label>
+          <div class="form-actions">
+            <button type="submit" class="primary">Guardar</button>
+            <button id="user-cancel" type="button" class="secondary">Cancelar</button>
+          </div>
+        </form>
+
+        <div class="card">
+          <table>
+            <thead><tr><th>ID</th><th>Nombre</th><th>Email</th><th>Rol</th><th>Acciones</th></tr></thead>
+            <tbody id="user-tbody"></tbody>
+          </table>
+          <div class="pager" id="user-pager"></div>
+        </div>
+      </section>
+
+      <!-- CUSTOMERS -->
+      <section id="customers" class="tab">
+        <div class="head-row">
+          <h2>Clientes</h2>
+          <div class="actions">
+            <input id="customer-q" class="input" placeholder="Buscar..."/>
+            <button id="customer-new" class="primary">+ Nuevo</button>
+          </div>
+        </div>
+
+        <form id="customer-form" class="card form-grid hidden">
+          <input type="hidden" name="id"/>
+          <label>Nombre<input name="name" required/></label>
+          <label>Teléfono<input name="phone"/></label>
+          <label>Email<input name="email" type="email"/></label>
+          <label>Dirección<input name="address"/></label>
+          <div class="form-actions">
+            <button type="submit" class="primary">Guardar</button>
+            <button id="customer-cancel" type="button" class="secondary">Cancelar</button>
+          </div>
+        </form>
+
+        <div class="card">
+          <table>
+            <thead><tr><th>ID</th><th>Nombre</th><th>Teléfono</th><th>Email</th><th>Acciones</th></tr></thead>
+            <tbody id="customer-tbody"></tbody>
+          </table>
+          <div class="pager" id="customer-pager"></div>
+        </div>
+      </section>
+
+      <!-- PRODUCTS -->
+      <section id="products" class="tab">
+        <div class="head-row">
+          <h2>Productos</h2>
+          <div class="actions">
+            <input id="product-q" class="input" placeholder="Buscar..."/>
+            <button id="product-new" class="primary">+ Nuevo</button>
+          </div>
+        </div>
+
+        <form id="product-form" class="card form-grid hidden">
+          <input type="hidden" name="id"/>
+          <label>Nombre<input name="name" required/></label>
+          <label>SKU<input name="sku"/></label>
+          <label>Precio<input name="price" type="number" step="0.01" min="0" required/></label>
+          <label>Stock<input name="stock" type="number" step="1" min="0" required/></label>
+          <label>Estado
+            <select name="status">
+              <option value="1">Activo</option>
+              <option value="0">Inactivo</option>
+            </select>
+          </label>
+          <div class="form-actions">
+            <button type="submit" class="primary">Guardar</button>
+            <button id="product-cancel" type="button" class="secondary">Cancelar</button>
+          </div>
+        </form>
+
+        <div class="card">
+          <table>
+            <thead><tr><th>ID</th><th>Nombre</th><th>SKU</th><th>Precio</th><th>Stock</th><th>Estado</th><th>Acciones</th></tr></thead>
+            <tbody id="product-tbody"></tbody>
+          </table>
+          <div class="pager" id="product-pager"></div>
+        </div>
+      </section>
+
+      <!-- SALES -->
+      <section id="sales" class="tab">
+        <div class="head-row">
+          <h2>Ventas</h2>
+          <div class="actions">
+            <button id="sale-new" class="primary">+ Nueva venta</button>
+          </div>
+        </div>
+
+        <form id="sale-form" class="card form-grid hidden">
+          <label>Cliente
+            <select name="customer_id" id="sale-customer">
+              <option value="">(Opcional)</option>
+            </select>
+          </label>
+          <div class="col-span-2">
+            <label>Productos</label>
+            <div id="sale-items"></div>
+            <button type="button" id="add-item" class="secondary">+ Agregar producto</button>
+          </div>
+          <div class="total-line">Total: $<span id="sale-total">0.00</span></div>
+          <div class="form-actions">
+            <button type="submit" class="primary">Guardar venta</button>
+            <button id="sale-cancel" type="button" class="secondary">Cancelar</button>
+          </div>
+        </form>
+
+        <div class="card">
+          <table>
+            <thead><tr><th>ID</th><th>Cliente</th><th>Total</th><th>Fecha</th><th>Acciones</th></tr></thead>
+            <tbody id="sales-tbody"></tbody>
+          </table>
+        </div>
+
+        <div id="sale-detail" class="card hidden"></div>
+      </section>
+    </main>
+  </div>
+
+  <div id="toast" class="toast hidden"></div>
+
+<script>
+  (function setApiBase(){
+    const override = new URLSearchParams(location.search).get('api'); // ?api=http://192.168.68.104:3000/api
+    const host = location.hostname;  // 127.0.0.1 o 192.168.x.x
+    const port = 3000;               // cambia si tu backend usa otro
+    const base = '/api';             // cambia a '/y/api' si aplica
+    window.API = override || `${location.protocol}//${host}:${port}${base}`;
+  })();
+</script>
+  <script src="app.js"></script>
+</body>
+</html>
