@@ -1,0 +1,5 @@
+node_modules/
+POS-backend/src/data/*.db-wal
+POS-backend/src/data/*.db-shm
+.env
+.DS_Store
